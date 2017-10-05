@@ -60,10 +60,15 @@ namespace SansSoussi.Controllers
                     MembershipUser user = Membership.Provider.GetUser(HttpContext.User.Identity.Name, true);
                     if (user != null)
                     {
-                        //add new comment to db
+                        // Using SqlCommand and Parameters to prevent Injection SQL in Search data 
                         SqlCommand cmd = new SqlCommand(
-                            "insert into Comments (UserId, CommentId, Comment) Values ('" + user.ProviderUserKey + "','" + Guid.NewGuid() + "','" + comment + "')",
+                            "insert into Comments (UserId, CommentId, Comment) Values (@user, @Guid , @Comment)",
                         _dbConnection);
+
+                        cmd.Parameters.AddWithValue("@user", user.ProviderUserKey);
+                        cmd.Parameters.AddWithValue("@Guid", user.ProviderUserKey);
+                        cmd.Parameters.AddWithValue("@Comment", comment);
+
                         _dbConnection.Open();
 
                         cmd.ExecuteNonQuery();
@@ -96,19 +101,23 @@ namespace SansSoussi.Controllers
             {
                 if (!string.IsNullOrEmpty(searchData))
                 {
-                    SqlCommand cmd = new SqlCommand("Select Comment from Comments where UserId = '" + user.ProviderUserKey + "' and Comment like '%" + searchData + "%'", _dbConnection);
+                    // Using SqlCommand and Parameters to prevent Injection SQL in Search data 
+                    SqlCommand cmd1 = new SqlCommand("Select Comment from Comments where UserId = @user and Comment like '%' +@Search + '%'", _dbConnection);
+                    cmd1.Parameters.AddWithValue("@user", user.ProviderUserKey);
+                    cmd1.Parameters.AddWithValue("@Search", searchData);
+
                     _dbConnection.Open();
-                    SqlDataReader rd = cmd.ExecuteReader();
+                    SqlDataReader reader = cmd1.ExecuteReader();
 
 
-                    while (rd.Read())
+                    while (reader.Read())
                     {
-                        string search = rd.GetString(0); //recupérer la valeur de la base de donnée 
+                        string search = reader.GetString(0); //recupérer la valeur de la base de donnée 
                         string encoded = Server.HtmlEncode(search); //encoder en HTML cette valeur
                         searchResults.Add(encoded); // Ajouter la valeur à la liste des résultats 
                     }
 
-                    rd.Close();
+                    reader.Close();
                     _dbConnection.Close();
                 }
             }
