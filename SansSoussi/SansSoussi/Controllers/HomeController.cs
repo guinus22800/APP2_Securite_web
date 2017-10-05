@@ -38,7 +38,9 @@ namespace SansSoussi.Controllers
 
                 while (rd.Read())
                 {
-                    comments.Add(rd.GetString(0));
+                    string comment = rd.GetString(0); //récuperer la valeur de la base de données 
+                    string encoded = Server.HtmlEncode(comment); //encoder cette valeur en HTML
+                    comments.Add(encoded); //Ajouter la valeur à la liste des commentaire 
                 }
 
                 rd.Close();
@@ -52,35 +54,36 @@ namespace SansSoussi.Controllers
         public ActionResult Comments(string comment)
         {
             string status = "success";
-            try
-            {
-                //Get current user from default membership provider
-                MembershipUser user = Membership.Provider.GetUser(HttpContext.User.Identity.Name, true);
-                if (user != null)
+                try
                 {
-                    //add new comment to db
-                    SqlCommand cmd = new SqlCommand(
-                        "insert into Comments (UserId, CommentId, Comment) Values ('" + user.ProviderUserKey + "','" + Guid.NewGuid() + "','" + comment + "')",
-                    _dbConnection);
-                    _dbConnection.Open();
+                    //Get current user from default membership provider
+                    MembershipUser user = Membership.Provider.GetUser(HttpContext.User.Identity.Name, true);
+                    if (user != null)
+                    {
+                        //add new comment to db
+                        SqlCommand cmd = new SqlCommand(
+                            "insert into Comments (UserId, CommentId, Comment) Values ('" + user.ProviderUserKey + "','" + Guid.NewGuid() + "','" + comment + "')",
+                        _dbConnection);
+                        _dbConnection.Open();
 
-                    cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        throw new Exception("Vous devez vous connecter");
+                    }
                 }
-                else
+
+                catch (Exception ex)
                 {
-                    throw new Exception("Vous devez vous connecter");
+                    status = ex.Message;
                 }
-            }
-            catch (Exception ex)
-            {
-                status = ex.Message;
-            }
-            finally
-            {
-                _dbConnection.Close();
-            }
+                finally
+                {
+                    _dbConnection.Close();
+                }
 
-            return Json(status);
+                return Json(status);
         }
 
         public ActionResult Search(string searchData)
@@ -100,7 +103,9 @@ namespace SansSoussi.Controllers
 
                     while (rd.Read())
                     {
-                        searchResults.Add(rd.GetString(0));
+                        string search = rd.GetString(0); //recupérer la valeur de la base de donnée 
+                        string encoded = Server.HtmlEncode(search); //encoder en HTML cette valeur
+                        searchResults.Add(encoded); // Ajouter la valeur à la liste des résultats 
                     }
 
                     rd.Close();
