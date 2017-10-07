@@ -32,7 +32,7 @@ namespace SansSoussi
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
-
+           //GlobalFilters.Filters.Add(new EnableCorsAttribute());
             RegisterGlobalFilters(GlobalFilters.Filters);
             RegisterRoutes(RouteTable.Routes);
         }

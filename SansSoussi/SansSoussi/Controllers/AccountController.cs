@@ -154,6 +154,10 @@ namespace SansSoussi.Controllers
         {
             return View();
         }
-
+       protected bool IsAllowedOrigin(string origin)
+            {
+                // ** replace with your own logic to check the origin header
+                return true;
+            }
     }
 }

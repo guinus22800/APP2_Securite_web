@@ -11,6 +11,7 @@ namespace SansSoussi.Controllers
 {
     public class HomeController : Controller
     {
+
         SqlConnection _dbConnection;
         public HomeController()
         {
@@ -170,5 +171,6 @@ namespace SansSoussi.Controllers
         {
             return View();
         }
+
     }
 }
